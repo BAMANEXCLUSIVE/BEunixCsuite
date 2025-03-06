@@ -1,0 +1,49 @@
+import plotly.graph_objects as go # type: ignore
+from dash import Dash, dcc, html # type: ignore
+
+print("Starting Dash app...")
+
+# Create app
+app = Dash(__name__)
+
+# Define workflow steps
+steps = [
+    {'label': 'Collect', 'description': 'Guest Satisfaction Index Survey → Data Collected on Guest Experiences'},
+    {'label': 'Analyze', 'description': 'Data Analysis (Statistical Tools) → Identify Key Issues (Speed, Empathy, Efficiency)'},
+    {'label': 'Implement', 'description': 'Develop Programs (Sheraton Service Promise) → Staff Training & Process Reengineering'},
+    {'label': 'Measure', 'description': 'Monitor & Measure (Call Logs) → Track Program Effectiveness (Resolution Time, Satisfaction Scores)'},
+    {'label': 'Improve', 'description': 'Continuous Improvement (Feedback Loop) → Monthly Reviews & Updates'}
+]
+
+# Define nodes and links for Sankey diagram
+nodes = [step['label'] for step in steps]
+links = [{'source': i, 'target': i + 1, 'value': 1} for i in range(len(steps) - 1)]
+
+# Create Sankey diagram
+fig = go.Figure(data=[go.Sankey(
+    node=dict(
+        pad=15,
+        thickness=20,
+        line=dict(color="black", width=0.5),
+        label=nodes
+    ),
+    link=dict(
+        source=[link['source'] for link in links],
+        target=[link['target'] for link in links],
+        value=[link['value'] for link in links]
+    )
+)])
+
+fig.update_layout(title_text="Interactive Workflow Visualization", font_size=10)
+
+# Define app layout
+app.layout = html.Div([
+    html.H1("Interactive Workflow Visualization"),
+    dcc.Graph(figure=fig),
+    html.Div(id='step-description')
+])
+
+# Run app
+if __name__ == '__main__':
+    print("Running server...")
+    app.run_server(debug=True)

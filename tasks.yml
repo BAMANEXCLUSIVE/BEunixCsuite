@@ -1,0 +1,147 @@
+#use nano tasks.yaml
+
+InstallationAndSetup:
+  - name: "Install Python 3.10 (BAT)"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/install_python_3_10.bat"
+    type: "bat"
+    dependencies: []
+  - name: "Install and Log Errors (BAT)"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/install_and_log_errors.bat"
+    type: "bat"
+    dependencies: ["Install Python 3.10 (BAT)"]
+  - name: "Install and Log Errors"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/install_and_log_errors.py"
+    type: "py"
+    dependencies: ["Install and Log Errors (BAT)"]
+  - name: "Installation SQL Alchemy & Psychograph"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/Installation SQL Alchemy & Psychograph.py"
+    type: "py"
+    dependencies: ["Install Python 3.10 (BAT)"]
+  - name: "Verify Installation"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/verify_installation.py"
+    type: "py"
+    dependencies: ["Installation SQL Alchemy & Psychograph"]
+  - name: "Verify Installation Log"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/verify_installation.log"
+    type: "doc"
+    dependencies: ["Verify Installation"]
+  - name: "Setup Detectron2 (BAT)"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/setup_detectron2.bat"
+    type: "bat"
+    dependencies: ["Install Python 3.10 (BAT)"]
+
+EnvironmentSetup:
+  - name: "Setup Environment"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/setup_environment.py"
+    type: "py"
+    dependencies: ["Install and Log Errors"]
+  - name: "Setup Environment Log"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/setup_environment.log"
+    type: "doc"
+    dependencies: ["Setup Environment"]
+  - name: "Setup Directories"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/setup_directories.py"
+    type: "py"
+    dependencies: ["Setup Environment"]
+  - name: "Setup Structure"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/setup_structure.py"
+    type: "py"
+    dependencies: ["Setup Directories"]
+
+DataProcessing:
+  - name: "Input Data"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/input_data.py"
+    type: "py"
+    dependencies: ["Setup Structure"]
+  - name: "Get Data"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/get_data.py"
+    type: "py"
+    dependencies: ["Input Data"]
+  - name: "Data Validation"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/data_validation.py"
+    type: "py"
+    dependencies: ["Input Data"]
+  - name: "Merged DataFrame"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/merged_df.py"
+    type: "py"
+    dependencies: ["Get Data", "Data Validation"]
+  - name: "Incremental Data Mining"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/Incremental Data Mining.py"
+    type: "py"
+    dependencies: ["Merged DataFrame"]
+  - name: "Data Cleansing"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/data_cleansing.py"
+    type: "py"
+    dependencies: ["Data Validation"]
+
+AutomationAndWorkflows:
+  - name: "Run Script (BAT)"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/run_script.bat"
+    type: "bat"
+    dependencies: ["Setup Environment"]
+  - name: "Run Full Process (BAT)"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/run_full_process.bat"
+    type: "bat"
+    dependencies: ["Run Script (BAT)"]
+  - name: "Run Full Process Upload (BAT)"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/run_full_process_upload.bat"
+    type: "bat"
+    dependencies: ["Run Full Process (BAT)"]
+
+Documentation:
+  - name: "README Documentation"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/README.md"
+    type: "doc"
+    dependencies: []
+  - name: "Is Neuromorphic MNIST Analysis"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/Is_Neuromorphic_MNIST_Neuromorphic_Analyzing_the_D.pdf"
+    type: "doc"
+    dependencies: []
+
+VersioningAndUpgrades:
+  - name: "Check Version Compatibility"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/check_versions.py"
+    type: "py"
+    dependencies: ["Install Python 3.10 (BAT)"]
+  - name: "Full Upgrade Packages"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/full_upgrade.py"
+    type: "py"
+    dependencies: ["Check Version Compatibility"]
+  - name: "GitHub Clone and Reinstall"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/clone_and_reinstall.py"
+    type: "py"
+    dependencies: ["Verify Installation", "Full Upgrade Packages"]
+
+MLAndAI:
+  - name: "Install Copilot"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/install_copilot.py"
+    type: "py"
+    dependencies: ["GitHub Clone and Reinstall"]
+
+DatabaseAndBackend:
+  - name: "Install PostgreSQL 17"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/install_postgresql_17.py"
+    type: "py"
+    dependencies: ["Install and Log Errors"]
+  - name: "Install NocoDB"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/install_nocodb.py"
+    type: "py"
+    dependencies: ["Install PostgreSQL 17"]
+  - name: "Install Multi-Server Packages"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/install_multi_server_packages.py"
+    type: "py"
+    dependencies: ["Install NocoDB"]
+  - name: "Check and Create SOP Files"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/check_create_sop_files.py"
+    type: "py"
+    dependencies: ["Setup Directories"]
+
+StatisticsAndAnalysis:
+  - name: "Install PSPP"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/install_pspp.py"
+    type: "py"
+    dependencies: ["Check and Create SOP Files"]
+  - name: "Install R Studio"
+    path: "/mnt/c/Users/ACER/Documents/BEunixUb - Setup Standard/install_r_studio.py"
+    type: "py"
+    dependencies: ["Install PSPP"]

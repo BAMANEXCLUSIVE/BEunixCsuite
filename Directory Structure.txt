@@ -1,0 +1,9 @@
+C:\Users\user\Documents
+    ├── BE_Experience_Workplace
+    │   ├── Logic_Functions
+    │   ├── Integration_Scripts
+    │   └── Backup_Scripts
+    └── System_in_Administrator
+        ├── Original_Software
+        ├── Libraries
+        └── Essentials

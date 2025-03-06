@@ -1,0 +1,1 @@
+assert merged_df['user_id'].is_unique, "User IDs must be unique!"

@@ -1,0 +1,15 @@
+yt-dlp installed successfully.
+moviepy installed successfully.
+opencv-python-headless installed successfully.
+Failed to install tensorflow. Error: None
+Failed to install tensorflow. Error: None
+mrcnn installed successfully.
+keras installed successfully.
+textblob installed successfully.
+requests installed successfully.
+pandas installed successfully.
+aiohttp installed successfully.
+frozenlist installed successfully.
+multidict installed successfully.
+orjson installed successfully.
+yarl installed successfully.
