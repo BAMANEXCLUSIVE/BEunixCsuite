@@ -1,0 +1,1 @@
+merged_df = pd.merge(df1, df2, on="user_id", how="inner")

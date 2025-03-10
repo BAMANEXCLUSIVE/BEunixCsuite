@@ -1,0 +1,239 @@
+#!/usr/bin/env python3
+import os
+import subprocess
+import logging
+import time
+import shutil
+import platform
+
+# ------------------------------------------------------------------------------
+# Logging Configuration: All events logged to 'setup_manager_extended.log'
+# ------------------------------------------------------------------------------
+logging.basicConfig(
+    filename="setup_manager_extended.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+
+# ------------------------------------------------------------------------------
+# TASKS Definition Methodology
+#
+# Each task dictionary defines:
+# - name: a friendly task name
+# - path: full path to the file (note: use raw strings or proper escaping)
+# - type: explicit file type to drive what command is used:
+#         "py"  → Python script (.py)
+#         "sh"  → Shell script (.sh)
+#         "bat" → Batch file (.bat; usually Windows-only)
+#         "exe" → Executable (.exe; Windows or via Wine)
+#         "doc" → Documentation/data file (skipped for execution)
+# ------------------------------------------------------------------------------
+# You can later externalize this TASKS list into a config file if preferred.
+TASKS = [
+    {"name": "Adapt Content", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\adapt_content.py", "type": "py"},
+    {"name": "Anaconda Installer", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\Anaconda3-2024.10-1-Windows-x86_64.exe", "type": "exe"},
+    {"name": "Apache Airflow Setup", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\Apache Airflow.py", "type": "py"},
+    {"name": "API Request", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\API Request.py", "type": "py"},
+    {"name": "ApiX Integration & Deployment", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\ApiX Integration and Deployment.py", "type": "py"},
+    {"name": "Atomic Operations MERGE", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\Atomic Operations MERGE.py", "type": "py"},
+    {"name": "Base Directory Setup", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\Base Directory.py", "type": "py"},
+    {"name": "BE Exclusive Organisation Setup", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\BE Exclusive Organisation Setup.py", "type": "py"},
+    {"name": "BE Experience Directory Integration", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\BE Experience Directory Integration.py", "type": "py"},
+    # Documentation-related tasks: not executed but can be distributed to stakeholders.
+    {"name": "BE Experience Projects Synchronisation Document", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\BE Experience projects syncronisation.docx", "type": "doc"},
+    {"name": "BE Experience Overview", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\BE Experience.docx", "type": "doc"},
+    {"name": "BE Experience Spreadsheet", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\BE Experience.xlsx", "type": "doc"},
+    {"name": "Broadcast DataFrame with PySpark", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\Broadcast smaller Data Frame pySpark.py", "type": "py"},
+    {"name": "CEO-Suite Apps", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\CEO-Suite Apps.py", "type": "py"},
+    {"name": "Combined Script", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\combined_script.py", "type": "py"},
+    {"name": "Contextual Message", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\contextual_message.py", "type": "py"},
+    {"name": "Data Validation", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\data validation.py", "type": "py"},
+    {"name": "Data Cleansing Log", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\data_cleansing.log", "type": "doc"},
+    {"name": "Data Cleansing", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\data_cleansing.py", "type": "py"},
+    {"name": "Data Processor", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\DataProcessor.py", "type": "py"},
+    {"name": "Directory Structure Info", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\Directory Structure.txt", "type": "doc"},
+    {"name": "Documentation & Version Control", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\Documentation and Version Control.py", "type": "py"},
+    {"name": "Download Process & Upload", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\download_process_upload.py", "type": "py"},
+    {"name": "Download Python", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\download_python.py", "type": "py"},
+    {"name": "Elementary Revolution Document", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\Elementary Revolution.pdf", "type": "doc"},
+    {"name": "Enhanced Documentation", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\Enhanced Documentation.py", "type": "py"},
+    {"name": "ETL Pipeline Setup", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\ETL Pipeline.py", "type": "py"},
+    {"name": "Feedback List Handling", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\feedback_list.py", "type": "py"},
+    {"name": "Full Process", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\full_process.py", "type": "py"},
+    {"name": "Full Process Upload", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\full_process_upload.py", "type": "py"},
+    {"name": "Full Stage by Stage Setup", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\FullStagebyStage.py", "type": "py"},
+    {"name": "Common Functions", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\functions.py", "type": "py"},
+    {"name": "Gamify User Experience", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\gamify_user_experience.py", "type": "py"},
+    {"name": "Generate Report", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\generate_report.py", "type": "py"},
+    {"name": "Get Data", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\get_data.py", "type": "py"},
+    {"name": "Incremental Data Mining", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\Incremental Data Mining.py", "type": "py"},
+    {"name": "Initialize Project", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\initialize_project.py", "type": "py"},
+    {"name": "Input Data", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\input_data.py", "type": "py"},
+    {"name": "Install and Log Errors (BAT)", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\install_and_log_errors.bat", "type": "bat"},
+    {"name": "Install and Log Errors", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\install_and_log_errors.py", "type": "py"},
+    {"name": "Install Python 3.10 (BAT)", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\install_python_3_10.bat", "type": "bat"},
+    {"name": "Installation SQL Alchemy & Psychograph", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\Installation SQL Alchemy & Psychograph.py", "type": "py"},
+    {"name": "Installation Errors Log", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\installation_errors.log", "type": "doc"},
+    {"name": "Integrate Data Log", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\integrate_data.log", "type": "doc"},
+    {"name": "Integrate Data Script", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\integrate_data.py", "type": "py"},
+    {"name": "Interactive Input", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\interactive_input.py", "type": "py"},
+    {"name": "Is Neuromorphic MNIST Analysis", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\Is_Neuromorphic_MNIST_Neuromorphic_Analyzing_the_D.pdf", "type": "doc"},
+    {"name": "Merged DataFrame", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\merged_df.py", "type": "py"},
+    {"name": "Network Installation", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\Network installation.py", "type": "py"},
+    {"name": "Output Data", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\output_data.py", "type": "py"},
+    {"name": "Partitioning Data with PySpark", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\Partitioning Data pySpark.py", "type": "py"},
+    {"name": "Plot Data", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\plot_data.py", "type": "py"},
+    {"name": "Project Directory Structure BE Experience", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\Project Directory Structure BE Experience.txt", "type": "doc"},
+    {"name": "PySpark Incremental Data Loading", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\pySpark Incremental Data Loading.py", "type": "py"},
+    {"name": "README Documentation", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\README.md", "type": "doc"},
+    {"name": "Replace Macros & Build (BAT)", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\replace_macros_and_build.bat", "type": "bat"},
+    {"name": "Research & Documentation", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\Research and Documentation.pdf", "type": "doc"},
+    {"name": "Run Full Process (BAT)", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\run_full_process.bat", "type": "bat"},
+    {"name": "Run Full Process Upload (BAT)", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\run_full_process_upload.bat", "type": "bat"},
+    {"name": "Run Script (BAT)", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\run_script.bat", "type": "bat"},
+    {"name": "Sample Data CSV", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\sample_data.csv", "type": "doc"},
+    {"name": "Schema Alignment Log", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\schema_alignment.log", "type": "doc"},
+    {"name": "Schema Alignment Script", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\schema_alignment.py", "type": "py"},
+    {"name": "Send Email", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\send_email.py", "type": "py"},
+    {"name": "Send Nudge", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\send_nudge.py", "type": "py"},
+    {"name": "Setup Detectron2 (BAT)", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\setup_detectron2.bat", "type": "bat"},
+    {"name": "Setup Directories", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\setup_directories.py", "type": "py"},
+    {"name": "Setup Environment Log", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\setup_environment.log", "type": "doc"},
+    {"name": "Setup Environment", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\setup_environment.py", "type": "py"},
+    {"name": "Setup Structure", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\setup_structure.py", "type": "py"},
+    {"name": "Shopify App", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\shopify_app.py", "type": "py"},
+    {"name": "Stage by Stage Setup", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\StagebyStage.py", "type": "py"},
+    {"name": "Suggest Optimization", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\suggest_optimization.py", "type": "py"},
+    {"name": "Sync Tasks", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\sync_tasks.sh", "type": "sh"},
+    {"name": "Test Detectron2", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\test_detectron2.py", "type": "py"},
+    {"name": "Test Import", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\test_import.py", "type": "py"},
+    {"name": "Timestamp ID Setup", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\Timestamp ID.py", "type": "py"},
+    {"name": "To Datetime Processing", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\to_datetime.py", "type": "py"},
+    {"name": "Upgraded Full Process", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\upgraded_full_process.py", "type": "py"},
+    {"name": "User Feedback", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\user_feedback.py", "type": "py"},
+    {"name": "Verify Installation Log", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\verify_installation.log", "type": "doc"},
+    {"name": "Verify Installation", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\verify_installation.py", "type": "py"},
+    {"name": "Your Updated Script", "path": r"C:\Users\ACER\Documents\BEunixUb - Setup Standard\your_updated_script.py", "type": "py"},
+]
+
+# ------------------------------------------------------------------------------
+# Execute Task Function:
+#
+# This function checks if a file exists, maps the file type to the proper
+# command to execute it (or logs/skips non-executable documentation files) and
+# runs the task capturing output and errors.
+# ------------------------------------------------------------------------------
+def execute_task(task):
+    file_path = task["path"]
+    if not os.path.exists(file_path):
+        logging.error(f"Task '{task['name']}' file not found: {file_path}")
+        print(f"[Error] {task['name']} not found.")
+        return False
+
+    file_type = task["type"]
+    command = None
+    sys_platform = platform.system()
+
+    if file_type == "py":
+        command = f"python3 \"{file_path}\""
+    elif file_type == "sh":
+        command = f"bash \"{file_path}\""
+    elif file_type == "bat":
+        if sys_platform == "Windows":
+            command = f"\"{file_path}\""
+        else:
+            logging.warning(f"Skipping {task['name']} (BAT file not supported on {sys_platform}).")
+            print(f"[Warning] Skipping {task['name']} as BAT files are not supported on {sys_platform}.")
+            return True
+    elif file_type == "exe":
+        if sys_platform == "Windows":
+            command = f"\"{file_path}\""
+        else:
+            # Optionally, if Wine is available on Linux, you could execute Windows executables.
+            if shutil.which("wine"):
+                command = f"wine \"{file_path}\""
+            else:
+                logging.warning(f"Skipping {task['name']} (EXE file not supported on {sys_platform}).")
+                print(f"[Warning] Skipping {task['name']} as EXE files are not supported on {sys_platform} without Wine.")
+                return True
+    else:
+        logging.info(f"Non-executable task: {task['name']} (type: {file_type}).")
+        print(f"[Info] Skipping {task['name']} (non-executable).")
+        return True
+
+    try:
+        print(f"[Running] {task['name']}")
+        logging.info(f"Executing {task['name']} with command: {command}")
+        result = subprocess.run(command, shell=True, capture_output=True, text=True)
+        if result.returncode != 0:
+            logging.error(f"Error executing {task['name']}: {result.stderr}")
+            print(f"[Error] {task['name']} failed. See log for details.")
+            return False
+        else:
+            print(f"[Completed] {task['name']}")
+            return True
+    except Exception as e:
+        logging.exception(f"Exception during execution of {task['name']}: {str(e)}")
+        print(f"[Exception] {task['name']} encountered an error: {str(e)}")
+        return False
+
+# ------------------------------------------------------------------------------
+# PlantUML Diagram Generation:
+#
+# This function writes a PlantUML (.puml) file mapping out the (extended) setup
+# process. It then calls the PlantUML command-line tool (if installed) to generate
+# a PNG diagram.
+# ------------------------------------------------------------------------------
+def generate_plantuml_diagram():
+    plantuml_file = "setup_process_extended.puml"
+    with open(plantuml_file, "w") as f:
+        f.write("@startuml\n")
+        f.write("title BEunixCsuite Extended Setup Process\n\n")
+        for idx, task in enumerate(TASKS):
+            f.write(f"rectangle \"{task['name']}\" as T{idx+1}\n")
+        f.write("\n' Define the sequential flow for documentation\n")
+        for idx in range(len(TASKS) - 1):
+            f.write(f"T{idx+1} --> T{idx+2}\n")
+        f.write("@enduml\n")
+    print(f"[Diagram] PlantUML file generated: {plantuml_file}")
+    if shutil.which("plantuml"):
+        try:
+            subprocess.run(["plantuml", plantuml_file], check=True)
+            print("[Diagram] PNG diagram generated with PlantUML.")
+        except subprocess.CalledProcessError as e:
+            print(f"[Diagram Error] {e}")
+    else:
+        print("[Diagram] PlantUML not found. Please install PlantUML for diagram generation.")
+
+# ------------------------------------------------------------------------------
+# Main Execution Function
+#
+# This function orchestrates the overall process by first generating a visual
+# diagram for stakeholders, then stepping through each task – reporting live updates,
+# logging status, and halting if a critical error is encountered.
+# ------------------------------------------------------------------------------
+def main():
+    print("============================================")
+    print("Starting BEunixCsuite Extended Setup Process...\n")
+    logging.info("BEunixCsuite extended setup process started.")
+    
+    # Generate visual diagram for documentation and transparency.
+    generate_plantuml_diagram()
+
+    # Execute tasks sequentially.
+    for task in TASKS:
+        print("--------------------------------------------")
+        success = execute_task(task)
+        if not success:
+            print(f"[Abort] Aborting setup due to failure in '{task['name']}'.")
+            logging.error(f"Aborting process at task: {task['name']}")
+            break
+        # Optionally adjust delay or implement monitoring / progress bar:
+        time.sleep(1)
+
+    print("\n============================================")
+    print("Setup process complete. Check 'setup_manager_extended.log' for details.")
+    logging.info("BEunixCsuite extended setup process completed.")
+
+if __name__ == "__main__":
+    main()
