@@ -287,6 +287,32 @@ def schedule_tasks(tasks):
         progress_rich.update(overall_task, completed=len(tasks))
     return results
 
+def generate_plantuml_gantt_chart(tasks):
+    """Generate a PlantUML Gantt chart with task details."""
+    gantt_code = """
+    @startgantt
+    Project starts 2025-03-01
+    """
+    for task in tasks:
+        name = task.get("name", "Unnamed Task")
+        duration = 1  # Default duration
+        progress = 0  # Default progress
+        if task.get("status") == "completed":
+            progress = 100
+        gantt_code += f"""
+        [{name}] lasts {duration} days
+        [{name}] is {progress}% completed
+        """
+        if "dependencies" in task:
+            for dep in task["dependencies"]:
+                gantt_code += f"[{dep}] -> [{name}]\n"
+    gantt_code += "@endgantt"
+    
+    gantt_file = os.path.join(OUTPUT_DIR, "gantt_chart.puml")
+    with open(gantt_file, "w") as f:
+        f.write(gantt_code)
+    console.print(f"[PlantUML] Gantt chart generated at '{gantt_file}'", style="cyan")
+
 # ------------------------------------------------------------------------------
 # Main Execution
 # ------------------------------------------------------------------------------
@@ -342,6 +368,9 @@ def main():
     
     gantt_chart_file = os.path.join(OUTPUT_DIR, "gantt_chart.html")
     open_file(gantt_chart_file)
+    
+    # Generate PlantUML Gantt chart
+    generate_plantuml_gantt_chart(tasks)
 
 if __name__ == "__main__":
     main()
