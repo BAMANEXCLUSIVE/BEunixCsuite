@@ -31,3 +31,34 @@ with DAG('etl_pipeline', default_args=default_args, schedule_interval='@daily') 
     load_task = PythonOperator(task_id='load', python_callable=load)
 
     extract_task >> transform_task >> load_task  # Set task dependencies
+
+def generate_airflow_dag(dag_file):
+    dag_code = """
+    from airflow import DAG
+    from airflow.operators.dummy_operator import DummyOperator
+    from datetime import datetime
+
+    default_args = {
+        'owner': 'airflow',
+        'start_date': datetime(2025, 3, 1),
+    }
+
+    dag = DAG('gantt_chart_dag', default_args=default_args, schedule_interval='@daily')
+
+    start = DummyOperator(task_id='start', dag=dag)
+    initiation = DummyOperator(task_id='initiation', dag=dag)
+    planning = DummyOperator(task_id='planning', dag=dag)
+    execution = DummyOperator(task_id='execution', dag=dag)
+    monitoring = DummyOperator(task_id='monitoring', dag=dag)
+    closing = DummyOperator(task_id='closing', dag=dag)
+
+    start >> initiation >> planning >> execution >> monitoring >> closing
+    """
+    
+    with open(dag_file, 'w') as file:
+        file.write(dag_code)
+
+if __name__ == "__main__":
+    dag_output_file = "gantt_chart_dag.py"
+    generate_airflow_dag(dag_output_file)
+    print(f"Airflow DAG code written to {dag_output_file}")

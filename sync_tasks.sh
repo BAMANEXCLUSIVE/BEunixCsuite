@@ -71,6 +71,18 @@ EOF
   PGPASSWORD=$AIRFLOW_PASS airflow users create --username $AIRFLOW_USER --firstname Firstname --lastname Lastname --role Admin --email $AIRFLOW_USER@example.com
 }
 
+# Function to Apply Diff Codespace
+apply_diff_codespace() {
+  echo "Applying diff codespace..."
+  # Add your diff codespace logic here
+}
+
+# Function to Download Diffs Codespace
+download_diffs_codespace() {
+  echo "Downloading diffs codespace..."
+  # Add your download diffs codespace logic here
+}
+
 # Main Function
 main() {
   edit_pg_hba_conf
@@ -79,6 +91,10 @@ main() {
   clear_password_cache
   grant_privileges
   automate_tasks
+
+  # Apply and download diffs codespace
+  apply_diff_codespace
+  download_diffs_codespace
 
   # Loop to continue tasks
   while true; do
@@ -90,4 +106,3 @@ main() {
 
 # Run the Main Function
 main
-
