@@ -11,16 +11,16 @@ IF %ERRORLEVEL% NEQ 0 (
 :: Print message to confirm administrator privileges
 echo Running as administrator...
 
-:: Download Python 3.10 installer
-echo Downloading Python 3.10 installer...
-powershell -Command "Invoke-WebRequest -Uri https://www.python.org/ftp/python/3.10.0/python-3.10.0-amd64.exe -OutFile python-3.10.0-amd64.exe"
+:: Download Python 3.13 installer
+echo Downloading Python 3.13 installer...
+powershell -Command "Invoke-WebRequest -Uri https://www.python.org/ftp/python/3.13.0/python-3.13.0-amd64.exe -OutFile python-3.13.0-amd64.exe"
 
-:: Install Python 3.10
-echo Installing Python 3.10...
-start /wait python-3.10.0-amd64.exe /quiet InstallAllUsers=1 PrependPath=1
+:: Install Python 3.13
+echo Installing Python 3.13...
+start /wait python-3.13.0-amd64.exe /quiet InstallAllUsers=1 PrependPath=1
 
 :: Clean up the installer
-del python-3.10.0-amd64.exe
+del python-3.13.0-amd64.exe
 
 :: Verify Python installation
 echo Verifying Python installation...
