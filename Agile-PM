@@ -1,0 +1,118 @@
+# pip install flask pyecharts
+from flask import Flask, render_template
+from pyecharts.charts import Gantt, Pie, Bar
+from pyecharts import options as opts
+from datetime import datetime, timedelta
+
+# Initialize Flask app
+app = Flask(__name__)
+
+# Helper function to create Gantt chart
+def create_gantt_chart():
+    # Sample data for tasks
+    tasks = [
+        {"name": "Sprint Planning", "start": "2025-05-01", "end": "2025-05-02"},
+        {"name": "Development Phase 1", "start": "2025-05-03", "end": "2025-05-10"},
+        {"name": "Testing Phase", "start": "2025-05-11", "end": "2025-05-15"},
+        {"name": "Development Phase 2", "start": "2025-05-16", "end": "2025-05-20"},
+        {"name": "Final Review", "start": "2025-05-21", "end": "2025-05-22"},
+    ]
+    gantt = Gantt()
+    
+    # Add tasks to Gantt chart
+    for task in tasks:
+        start_date = datetime.strptime(task['start'], '%Y-%m-%d')
+        end_date = datetime.strptime(task['end'], '%Y-%m-%d')
+        gantt.add_yaxis(task['name'], [[start_date, end_date]])
+    
+    gantt.set_global_opts(
+        title_opts=opts.TitleOpts(title="Agile Project Gantt Chart"),
+        tooltip_opts=opts.TooltipOpts(is_show=True),
+    )
+    return gantt
+
+# Helper function to create Pie chart for task distribution
+def create_pie_chart():
+    # Sample data for task distribution
+    data = [("Development", 50), ("Testing", 20), ("Planning", 15), ("Review", 15)]
+    pie = Pie()
+    pie.add("", data)
+    pie.set_global_opts(
+        title_opts=opts.TitleOpts(title="Task Distribution"),
+        legend_opts=opts.LegendOpts(is_show=True),
+    )
+    pie.set_series_opts(label_opts=opts.LabelOpts(formatter="{b}: {c}%"))
+    return pie
+
+# Helper function to create Bar chart for Sprint Progress
+def create_bar_chart():
+    # Sample data for sprint progress
+    sprints = ["Sprint 1", "Sprint 2", "Sprint 3"]
+    completed = [70, 60, 90]
+    bar = Bar()
+    bar.add_xaxis(sprints)
+    bar.add_yaxis("Task Completion Percentage", completed)
+    bar.set_global_opts(
+        title_opts=opts.TitleOpts(title="Sprint Progress"),
+        yaxis_opts=opts.AxisOpts(name="Completion %"),
+        xaxis_opts=opts.AxisOpts(name="Sprints"),
+    )
+    return bar
+
+# Flask route for dashboard
+@app.route("/")
+def dashboard():
+    gantt_chart = create_gantt_chart()
+    pie_chart = create_pie_chart()
+    bar_chart = create_bar_chart()
+
+    # Render HTML with embedded charts
+    return f"""
+    <html>
+        <head>
+            <title>Agile Project Management Dashboard</title>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.3.3/echarts.min.js"></script>
+        </head>
+        <body>
+            <h1>Agile Project Management Dashboard</h1>
+            <div id="gantt" style="width: 100%; height: 500px;"></div>
+            <script>{gantt_chart.render_embed()}</script>
+            <div id="pie" style="width: 100%; height: 500px;"></div>
+            <script>{pie_chart.render_embed()}</script>
+            <div id="bar" style="width: 100%; height: 500px;"></div>
+            <script>{bar_chart.render_embed()}</script>
+        </body>
+    </html>
+    """
+
+# Run Flask app
+if __name__ == "__main__":
+    app.run(debug=True)
+
+#Explanation of the Script
+#Dependencies:
+
+#Flask: Serves as the web framework for hosting the dashboard.
+#pyecharts: A Python library for creating interactive and visually appealing charts.
+#Charts:
+
+#Gantt Chart: Displays the timeline of tasks in the Agile project.
+#Pie Chart: Shows the distribution of tasks among different categories.
+#Bar Chart: Visualizes the completion percentage of tasks for each sprint.
+#Sample Data:
+
+#Replace the sample data with dynamic data from your project management database or API.
+#Dashboard:
+
+#The dashboard is served at http://127.0.0.1:5000/.
+#Customization:
+
+#Modify the tasks, sprints, and other data points to fit your Agile project requirements.
+#Deployment
+#To deploy the dashboard, you can use platforms like:
+
+#Heroku
+#AWS Elastic Beanstalk
+#Google Cloud Run
+#Refer to the respective documentation for deployment steps.
+
