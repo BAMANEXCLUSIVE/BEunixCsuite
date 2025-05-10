@@ -111,8 +111,6 @@ if __name__ == "__main__":
 #Deployment
 #To deploy the dashboard, you can use platforms like:
 
-#Heroku
-#AWS Elastic Beanstalk
 #Google Cloud Run
-#Refer to the respective documentation for deployment steps.
+
 
